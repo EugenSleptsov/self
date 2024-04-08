@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"regexp"
 )
 
 type Message struct {
@@ -51,7 +52,7 @@ func main() {
 	}
 
 	// Extract improved code from API response
-	improvedCode := response.Choices[0].Message.Content
+	improvedCode := extractImprovedCode(response.Choices[0].Message.Content)
 
 	// Write improved code to file
 	err = ioutil.WriteFile("main.go", []byte(improvedCode), 0644)
@@ -59,6 +60,16 @@ func main() {
 		fmt.Println("Error writing to file:", err)
 		return
 	}
+}
+
+func extractImprovedCode(content string) string {
+	// Use regex to extract code between ```go tags
+	re := regexp.MustCompile("```go([\\s\\S]*)```")
+	match := re.FindStringSubmatch(content)
+	if len(match) >= 2 && match[1] != "([\\s\\S]*)" {
+		return match[1]
+	}
+	return content
 }
 
 func makeAPICall(currentContent string) (string, error) {
@@ -72,7 +83,7 @@ func makeAPICall(currentContent string) (string, error) {
 	payload := RequestPayload{
 		Model: "gpt-3.5-turbo-1106",
 		Messages: []Message{
-			{Role: "system", Content: "You are a service that improves code of the project. I will send you a code and you need to answer with improved code. Answer with improved code only. Your code must be in one file. If this file would fail to run, then it will break everything, so try your best to not break anything. The code should be in Go. The code is the current project that handles the API call to OpenAI GPT endpoint. You should not use backticks to wrap your code. You should never change a Model that is used in payload"},
+			{Role: "system", Content: "You are a service that improves code of the project. I will send you a code and you need to answer with improved code. Answer with improved code only. Your code must be in one file. If this file would fail to run, then it will break everything, so try your best to not break anything. The code should be in Go. The code is the current project that handles the API call to OpenAI GPT endpoint. You should never change a Model that is used in payload and endpoint url"},
 			{Role: "user", Content: currentContent},
 		},
 	}
