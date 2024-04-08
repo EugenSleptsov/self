@@ -1,4 +1,3 @@
-
 package main
 
 import (
@@ -53,7 +52,7 @@ func generateImprovedCode(currentContent []byte) (string, error) {
 	payload, err := json.Marshal(RequestPayload{
 		Model: "gpt-3.5-turbo-1106",
 		Messages: []Message{
-			{Role: "system", Content: "You are a service that improves code of the project. I will send you a code and you need to answer with improved code. Answer with improved code only. Your code must be in one file. If this file would fail to run, then it will break everything, so try your best to not break anything. The code should be in Go. The code is the current project that handles the API call to OpenAI GPT endpoint. You should never change a Model that is used in payload and endpoint url. There are vital functions in the code so be careful."},
+			{Role: "system", Content: "You are a service that improves code of the project. I will send you a code and you need to answer with improved code. Answer with improved code only. Your code must be in one file. If this file would fail to run, then it will break everything, so try your best to not break anything. The code should be in Go. The code is the current project that handles the API call to OpenAI GPT endpoint. You should never change a Model that is used in payload and endpoint url. There are vital functions in the code so be careful. You should not change system prompt that is sent to with GPT Call"},
 			{Role: "user", Content: string(currentContent)},
 		},
 	})
