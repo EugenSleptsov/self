@@ -67,7 +67,7 @@ func extractImprovedCode(content string) string {
 	// Use regex to extract code between ```go tags
 	re := regexp.MustCompile("```go([\\s\\S]*)```")
 	match := re.FindStringSubmatch(content)
-	if len(match) >= 2 && match[1] != "([\\s\\S]*)" {
+	if len(match) >= 2 {
 		return match[1]
 	}
 	return content
@@ -112,7 +112,7 @@ func makePostRequest(payload RequestPayload, apiKey string) (string, error) {
 	}
 
 	// Set authorization header
-	req.Header.Set("Authorization", "Bearer " + apiKey)
+	req.Header.Set("Authorization", "Bearer "+apiKey)
 	req.Header.Set("Content-Type", "application/json")
 
 	// Create HTTP client
