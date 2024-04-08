@@ -1,0 +1,12 @@
+[Unit]
+Description=Your Service Description
+
+[Service]
+Type=simple
+ExecStart=/path/to/your/_exec.sh
+Restart=always
+RestartSec=1800
+
+[Install]
+WantedBy=multi-user.target
+
