@@ -8,5 +8,5 @@ if [ $? -ne 0 ]; then
 else
     git add .
     git commit -m "Next iteration"
-    git push origin master
+    git push
 fi
