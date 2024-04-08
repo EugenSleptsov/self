@@ -1,3 +1,4 @@
+
 package main
 
 import (
@@ -37,7 +38,7 @@ func main() {
 	}
 
 	// Make API call to OpenAI GPT endpoint
-	apiResponse, err := makeAPICall(string(currentContent))
+	apiResponse, err := makeAPICall(currentContent)
 	if err != nil {
 		fmt.Println("Error making API call:", err)
 		return
@@ -72,7 +73,7 @@ func extractImprovedCode(content string) string {
 	return content
 }
 
-func makeAPICall(currentContent string) (string, error) {
+func makeAPICall(currentContent []byte) (string, error) {
 	// Retrieve API key from environment variable
 	apiKey := os.Getenv("SELF_PROJECT_API_KEY")
 	if apiKey == "" {
@@ -84,7 +85,7 @@ func makeAPICall(currentContent string) (string, error) {
 		Model: "gpt-3.5-turbo-1106",
 		Messages: []Message{
 			{Role: "system", Content: "You are a service that improves code of the project. I will send you a code and you need to answer with improved code. Answer with improved code only. Your code must be in one file. If this file would fail to run, then it will break everything, so try your best to not break anything. The code should be in Go. The code is the current project that handles the API call to OpenAI GPT endpoint. You should never change a Model that is used in payload and endpoint url. There are vital functions in the code so be careful."},
-			{Role: "user", Content: currentContent},
+			{Role: "user", Content: string(currentContent)},
 		},
 	}
 
@@ -111,7 +112,7 @@ func makePostRequest(payload RequestPayload, apiKey string) (string, error) {
 	}
 
 	// Set authorization header
-	req.Header.Set("Authorization", "Bearer "+apiKey)
+	req.Header.Set("Authorization", "Bearer " + apiKey)
 	req.Header.Set("Content-Type", "application/json")
 
 	// Create HTTP client
