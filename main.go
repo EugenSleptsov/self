@@ -1,3 +1,4 @@
+
 package main
 
 import (
@@ -88,6 +89,16 @@ func makeAPICall(currentContent string) (string, error) {
 		},
 	}
 
+	// Make POST request to OpenAI GPT endpoint
+	apiResponse, err := makePostRequest(payload, apiKey)
+	if err != nil {
+		return "", err
+	}
+
+	return apiResponse, nil
+}
+
+func makePostRequest(payload RequestPayload, apiKey string) (string, error) {
 	// Marshal payload to JSON
 	payloadBytes, err := json.Marshal(payload)
 	if err != nil {
