@@ -37,23 +37,12 @@ func main() {
 		return
 	}
 
-	// Make API call to OpenAI GPT endpoint
-	apiResponse, err := makeAPICall(string(currentContent))
+	// Make API call to OpenAI GPT endpoint to improve the code
+	improvedCode, err := improveCode(string(currentContent))
 	if err != nil {
-		fmt.Println("Error making API call:", err)
+		fmt.Println("Error improving code:", err)
 		return
 	}
-
-	// Parse API response
-	var response ApiResponse
-	err = json.Unmarshal([]byte(apiResponse), &response)
-	if err != nil {
-		fmt.Println("Error parsing API response:", err)
-		return
-	}
-
-	// Extract improved code from API response
-	improvedCode := extractImprovedCode(response.Choices[0].Message.Content)
 
 	// Write improved code to file
 	err = ioutil.WriteFile("main.go", []byte(improvedCode), 0644)
@@ -63,17 +52,7 @@ func main() {
 	}
 }
 
-func extractImprovedCode(content string) string {
-	// Use regex to extract code between ```go tags
-	re := regexp.MustCompile("```go([\\s\\S]*)```")
-	match := re.FindStringSubmatch(content)
-	if len(match) >= 2 && match[1] != "([\\s\\S]*)" {
-		return match[1]
-	}
-	return content
-}
-
-func makeAPICall(currentContent string) (string, error) {
+func improveCode(currentContent string) (string, error) {
 	// Retrieve API key from environment variable
 	apiKey := os.Getenv("SELF_PROJECT_API_KEY")
 	if apiKey == "" {
@@ -90,12 +69,25 @@ func makeAPICall(currentContent string) (string, error) {
 	}
 
 	// Make POST request to OpenAI GPT endpoint
-	apiResponse, err := makePostRequest(payload, apiKey)
+	improvedContent, err := makePostRequest(payload, apiKey)
 	if err != nil {
 		return "", err
 	}
 
-	return apiResponse, nil
+	// Extract improved code from API response
+	improvedCode := extractImprovedCode(improvedContent)
+
+	return improvedCode, nil
+}
+
+func extractImprovedCode(content string) string {
+	// Use regex to extract code between ```go tags
+	re := regexp.MustCompile("```go([\\s\\S]*)```")
+	match := re.FindStringSubmatch(content)
+	if len(match) >= 2 {
+		return match[1]
+	}
+	return content
 }
 
 func makePostRequest(payload RequestPayload, apiKey string) (string, error) {
