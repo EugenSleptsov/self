@@ -1,5 +1,11 @@
 #!/bin/bash
 
+# Get the directory of the script
+SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
+
+# Change to the script directory
+cd "$SCRIPT_DIR" || exit
+
 # Each time we go run . we are receiving new main.go content
 
 # Running current version which we know is working
