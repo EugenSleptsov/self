@@ -1,7 +1,5 @@
 #!/bin/bash
 
-SELF_PROJECT_API_KEY=$SELF_PROJECT_API_KEY
-
 # Get the directory of the script
 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 
