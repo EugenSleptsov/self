@@ -82,7 +82,6 @@ func generateImprovedCode(currentContent []byte) (string, error) {
 }
 
 func makePostRequest(payload []byte, apiKey string) (string, error) {
-	client := &http.Client{}
 	req, err := http.NewRequest("POST", "https://api.openai.com/v1/chat/completions", bytes.NewBuffer(payload))
 	if err != nil {
 		return "", fmt.Errorf("error creating HTTP request: %v", err)
@@ -90,6 +89,7 @@ func makePostRequest(payload []byte, apiKey string) (string, error) {
 	req.Header.Set("Authorization", "Bearer "+apiKey)
 	req.Header.Set("Content-Type", "application/json")
 
+	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("error sending HTTP request: %v", err)
