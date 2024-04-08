@@ -42,7 +42,7 @@ func main() {
 		return
 	}
 
-	err = os.WriteFile("main.go", []byte(improvedCode), 0644)
+	err = os.WriteFile("improved_main.go", []byte(improvedCode), 0644)
 	if err != nil {
 		fmt.Println("Error writing to file:", err)
 		return
