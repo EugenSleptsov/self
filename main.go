@@ -30,21 +30,18 @@ type ApiResponse struct {
 }
 
 func main() {
-	// Read current main.go file content
 	currentContent, err := os.ReadFile("main.go")
 	if err != nil {
 		fmt.Println("Error reading current file content:", err)
 		return
 	}
 
-	// Make API call to OpenAI GPT endpoint
 	improvedCode, err := generateImprovedCode(currentContent)
 	if err != nil {
 		fmt.Println("Error generating improved code:", err)
 		return
 	}
 
-	// Write improved code to file
 	err = os.WriteFile("main.go", []byte(improvedCode), 0644)
 	if err != nil {
 		fmt.Println("Error writing to file:", err)
@@ -53,7 +50,6 @@ func main() {
 }
 
 func generateImprovedCode(currentContent []byte) (string, error) {
-	// Marshal payload to JSON
 	payload, err := json.Marshal(RequestPayload{
 		Model: "gpt-3.5-turbo-1106",
 		Messages: []Message{
@@ -65,32 +61,28 @@ func generateImprovedCode(currentContent []byte) (string, error) {
 		return "", fmt.Errorf("error marshalling payload: %v", err)
 	}
 
-	// Retrieve API key from environment variable
 	apiKey := os.Getenv("SELF_PROJECT_API_KEY")
 	if apiKey == "" {
 		return "", fmt.Errorf("SELF_PROJECT_API_KEY environment variable not set")
 	}
 
-	// Make POST request to OpenAI GPT endpoint
 	apiResponse, err := makePostRequest(payload, apiKey)
 	if err != nil {
 		return "", fmt.Errorf("error making POST request: %v", err)
 	}
 
-	// Parse API response
 	var response ApiResponse
 	err = json.Unmarshal([]byte(apiResponse), &response)
 	if err != nil {
 		return "", fmt.Errorf("error parsing API response: %v", err)
 	}
 
-	// Extract and return improved code from API response
 	improvedCode := extractImprovedCode(response.Choices[0].Message.Content)
 	return improvedCode, nil
 }
 
 func makePostRequest(payload []byte, apiKey string) (string, error) {
-	// Make HTTP POST request to OpenAI GPT endpoint
+	client := &http.Client{}
 	req, err := http.NewRequest("POST", "https://api.openai.com/v1/chat/completions", bytes.NewBuffer(payload))
 	if err != nil {
 		return "", fmt.Errorf("error creating HTTP request: %v", err)
@@ -98,17 +90,12 @@ func makePostRequest(payload []byte, apiKey string) (string, error) {
 	req.Header.Set("Authorization", "Bearer "+apiKey)
 	req.Header.Set("Content-Type", "application/json")
 
-	// Create HTTP client
-	client := http.Client{}
-
-	// Send HTTP request
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("error sending HTTP request: %v", err)
 	}
 	defer resp.Body.Close()
 
-	// Read response body
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", fmt.Errorf("error reading response body: %v", err)
@@ -118,7 +105,6 @@ func makePostRequest(payload []byte, apiKey string) (string, error) {
 }
 
 func extractImprovedCode(content string) string {
-	// Use regex to extract code between ```go tags
 	re := regexp.MustCompile("```go([\\s\\S]*)```")
 	match := re.FindStringSubmatch(content)
 	if len(match) >= 2 {
