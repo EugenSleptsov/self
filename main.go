@@ -1,11 +1,10 @@
-
 package main
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"regexp"
@@ -31,28 +30,49 @@ type ApiResponse struct {
 
 func main() {
 	// Read current main.go file content
-	currentContent, err := ioutil.ReadFile("main.go")
+	currentContent, err := os.ReadFile("main.go")
 	if err != nil {
 		fmt.Println("Error reading current file content:", err)
 		return
 	}
 
-	// Make API call to OpenAI GPT endpoint to improve the code
-	improvedCode, err := improveCode(string(currentContent))
+	// Make API call to OpenAI GPT endpoint
+	apiResponse, err := makeAPICall(string(currentContent))
 	if err != nil {
-		fmt.Println("Error improving code:", err)
+		fmt.Println("Error making API call:", err)
 		return
 	}
 
+	// Parse API response
+	var response ApiResponse
+	err = json.Unmarshal([]byte(apiResponse), &response)
+	if err != nil {
+		fmt.Println("Error parsing API response:", err)
+		return
+	}
+
+	// Extract improved code from API response
+	improvedCode := extractImprovedCode(response.Choices[0].Message.Content)
+
 	// Write improved code to file
-	err = ioutil.WriteFile("main.go", []byte(improvedCode), 0644)
+	err = os.WriteFile("main.go", []byte(improvedCode), 0644)
 	if err != nil {
 		fmt.Println("Error writing to file:", err)
 		return
 	}
 }
 
-func improveCode(currentContent string) (string, error) {
+func extractImprovedCode(content string) string {
+	// Use regex to extract code between ```go tags
+	re := regexp.MustCompile("```go([\\s\\S]*)```")
+	match := re.FindStringSubmatch(content)
+	if len(match) >= 2 && match[1] != "([\\s\\S]*)" {
+		return match[1]
+	}
+	return content
+}
+
+func makeAPICall(currentContent string) (string, error) {
 	// Retrieve API key from environment variable
 	apiKey := os.Getenv("SELF_PROJECT_API_KEY")
 	if apiKey == "" {
@@ -63,31 +83,18 @@ func improveCode(currentContent string) (string, error) {
 	payload := RequestPayload{
 		Model: "gpt-3.5-turbo-1106",
 		Messages: []Message{
-			{Role: "system", Content: "You are a service that improves code of the project. I will send you a code and you need to answer with improved code. Answer with improved code only. Your code must be in one file. If this file would fail to run, then it will break everything, so try your best to not break anything. The code should be in Go. The code is the current project that handles the API call to OpenAI GPT endpoint. You should never change a Model that is used in payload and endpoint url"},
+			{Role: "system", Content: "You are a service that improves code of the project. I will send you a code and you need to answer with improved code. Answer with improved code only. Your code must be in one file. If this file would fail to run, then it will break everything, so try your best to not break anything. The code should be in Go. The code is the current project that handles the API call to OpenAI GPT endpoint. You should never change a Model that is used in payload and endpoint url. There are vital functions in the code so be careful."},
 			{Role: "user", Content: currentContent},
 		},
 	}
 
 	// Make POST request to OpenAI GPT endpoint
-	improvedContent, err := makePostRequest(payload, apiKey)
+	apiResponse, err := makePostRequest(payload, apiKey)
 	if err != nil {
 		return "", err
 	}
 
-	// Extract improved code from API response
-	improvedCode := extractImprovedCode(improvedContent)
-
-	return improvedCode, nil
-}
-
-func extractImprovedCode(content string) string {
-	// Use regex to extract code between ```go tags
-	re := regexp.MustCompile("```go([\\s\\S]*)```")
-	match := re.FindStringSubmatch(content)
-	if len(match) >= 2 {
-		return match[1]
-	}
-	return content
+	return apiResponse, nil
 }
 
 func makePostRequest(payload RequestPayload, apiKey string) (string, error) {
@@ -118,7 +125,7 @@ func makePostRequest(payload RequestPayload, apiKey string) (string, error) {
 	defer resp.Body.Close()
 
 	// Read response body
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", err
 	}
