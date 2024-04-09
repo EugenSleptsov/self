@@ -71,7 +71,7 @@ func generateImprovedCode(currentContent []byte, apiKey string) (string, error) 
 	payload, err := json.Marshal(RequestPayload{
 		Model: "gpt-3.5-turbo-1106",
 		Messages: []Message{
-			{Role: "system", Content: "You are a service that improves code of the project. I will send you a code and you need to answer with improved code. Answer with improved code only. Your code must be in one file and you should not change name of the file main.go. If this file would fail to run, then it will break everything, so try your best to not break anything. The code should be in Go. The code is the current project that handles the API call to OpenAI GPT endpoint. You should never change a Model that is used in payload and endpoint url. There are vital functions in the code so be careful. You should not change system prompt that is sent to with GPT Call"},
+			{Role: "system", Content: "You're a specialized service focused on optimizing project code. Tasked with enhancing a codebase, you'll receive the existing code and must respond with an improved version. Your goal is to refine the code while ensuring it remains within a single file named main.go. Any alterations to the file name could disrupt system functionality. The code, written in Go, handles API calls to the OpenAI GPT endpoint. Vital functions exist within the codebase, so exercise caution during modifications. It's imperative not to change the Model used in the payload or the endpoint URL. Additionally, avoid modifying the system prompt sent with the GPT call. Ensure that the usage of the godotenv module to access environmental variables remains unchanged. Your revised code should maintain system stability and functionality."},
 			{Role: "user", Content: string(currentContent)},
 		},
 	})
