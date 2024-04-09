@@ -1,10 +1,10 @@
-
 package main
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	env "github.com/joho/godotenv"
 	"io"
 	"net/http"
 	"os"
@@ -27,29 +27,47 @@ type Choice struct {
 
 type ApiResponse struct {
 	Choices []Choice `json:"choices"`
+	Error   Error    `json:"error"`
+}
+
+type Error struct {
+	Message string `json:"message"`
 }
 
 func main() {
-	currentContent, err := os.ReadFile("main.go")
+	file := "main.go"
+
+	currentContent, err := os.ReadFile(file)
 	if err != nil {
 		fmt.Println("Error reading current file content:", err)
 		return
 	}
 
-	improvedCode, err := generateImprovedCode(currentContent)
+	if err = env.Load(); err != nil {
+		fmt.Println("Error loading .env file")
+		return
+	}
+
+	apiKey := os.Getenv("SELF_PROJECT_API_KEY")
+	if apiKey == "" {
+		fmt.Println("SELF_PROJECT_API_KEY environment variable not set")
+		return
+	}
+
+	improvedCode, err := generateImprovedCode(currentContent, apiKey)
 	if err != nil {
 		fmt.Println("Error generating improved code:", err)
 		return
 	}
 
-	err = os.WriteFile("main.go", []byte(improvedCode), 0644)
+	err = os.WriteFile(file, []byte(improvedCode), 0644)
 	if err != nil {
 		fmt.Println("Error writing to file:", err)
 		return
 	}
 }
 
-func generateImprovedCode(currentContent []byte) (string, error) {
+func generateImprovedCode(currentContent []byte, apiKey string) (string, error) {
 	payload, err := json.Marshal(RequestPayload{
 		Model: "gpt-3.5-turbo-1106",
 		Messages: []Message{
@@ -61,11 +79,6 @@ func generateImprovedCode(currentContent []byte) (string, error) {
 		return "", fmt.Errorf("error marshalling payload: %v", err)
 	}
 
-	apiKey := os.Getenv("SELF_PROJECT_API_KEY")
-	if apiKey == "" {
-		return "", fmt.Errorf("SELF_PROJECT_API_KEY environment variable not set")
-	}
-
 	apiResponse, err := makePostRequest(payload, apiKey)
 	if err != nil {
 		return "", fmt.Errorf("error making POST request: %v", err)
@@ -75,6 +88,10 @@ func generateImprovedCode(currentContent []byte) (string, error) {
 	err = json.Unmarshal([]byte(apiResponse), &response)
 	if err != nil {
 		return "", fmt.Errorf("error parsing API response: %v", err)
+	}
+
+	if response.Error.Message != "" {
+		return "", fmt.Errorf("API error: %s", response.Error.Message)
 	}
 
 	improvedCode := extractImprovedCode(response.Choices[0].Message.Content)
