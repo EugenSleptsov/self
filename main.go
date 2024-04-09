@@ -1,3 +1,9 @@
+
+// Iteration 1: Refactored main function
+// Iteration 2: Added error handling and comments
+// Iteration 3: Improved error handling and enhanced readability
+// Iteration 4: Enhanced error handling and readability
+
 package main
 
 import (
@@ -35,7 +41,6 @@ type Error struct {
 	Message string `json:"message"`
 }
 
-// Iteration 1: Refactored main function
 func main() {
 	err := enhanceCodebase("main.go")
 	if err != nil {
@@ -43,7 +48,6 @@ func main() {
 	}
 }
 
-// Iteration 1: Refactored to enhanceCodebase function
 func enhanceCodebase(fileName string) error {
 	currentContent, err := readCurrentFile(fileName)
 	if err != nil {
@@ -68,7 +72,6 @@ func enhanceCodebase(fileName string) error {
 	return nil
 }
 
-// Iteration 2: Added error handling and comments
 func readCurrentFile(fileName string) (string, error) {
 	currentContent, err := os.ReadFile(fileName)
 	if err != nil {
@@ -77,7 +80,6 @@ func readCurrentFile(fileName string) (string, error) {
 	return string(currentContent), nil
 }
 
-// Iteration 2: Added error handling
 func loadAPIKey() (string, error) {
 	if err := godotenv.Load(); err != nil {
 		return "", err
@@ -89,7 +91,6 @@ func loadAPIKey() (string, error) {
 	return apiKey, nil
 }
 
-// Iteration 3: Improved error handling and enhanced readability
 func generateImprovedCode(currentContent, apiKey string) (string, error) {
 	payload, err := json.Marshal(RequestPayload{
 		Model: "gpt-3.5-turbo-1106",
@@ -121,7 +122,6 @@ func generateImprovedCode(currentContent, apiKey string) (string, error) {
 	return improvedCode, nil
 }
 
-// Iteration 4: Enhanced error handling and readability
 func makePostRequest(payload []byte, apiKey string) (string, error) {
 	req, err := http.NewRequest("POST", "https://api.openai.com/v1/chat/completions", bytes.NewBuffer(payload))
 	if err != nil {
@@ -145,7 +145,6 @@ func makePostRequest(payload []byte, apiKey string) (string, error) {
 	return string(body), nil
 }
 
-// Iteration 3: Improved regex pattern and added comments
 func extractImprovedCode(content string) string {
 	re := regexp.MustCompile("```go([\\s\\S]*)```")
 	match := re.FindStringSubmatch(content)
@@ -155,7 +154,6 @@ func extractImprovedCode(content string) string {
 	return content
 }
 
-// Iteration 2: Improved error handling and added comments
 func writeToFile(fileName, content string) error {
 	err := os.WriteFile(fileName, []byte(content), 0644)
 	return err
