@@ -1,4 +1,6 @@
 #!/bin/bash
+git reset --hard HEAD
+git pull
 
 # Get the directory of the script
 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
@@ -17,6 +19,9 @@ git add .
 git commit -m "Next iteration of the project, time: $(date +'%Y-%m-%d %H:%M:%S')"
 
 # Running the new version
+go run .
+
+# Running the version provided by new version
 go run .
 
 # Checking if the new version is working
