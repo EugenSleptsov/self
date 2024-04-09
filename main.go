@@ -1,14 +1,16 @@
+
 package main
 
 import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	env "github.com/joho/godotenv"
 	"io"
 	"net/http"
 	"os"
 	"regexp"
+
+	"github.com/joho/godotenv"
 )
 
 type Message struct {
@@ -43,7 +45,7 @@ func main() {
 		return
 	}
 
-	if err = env.Load(); err != nil {
+	if err = godotenv.Load(); err != nil {
 		fmt.Println("Error loading .env file")
 		return
 	}
@@ -54,7 +56,7 @@ func main() {
 		return
 	}
 
-	improvedCode, err := generateImprovedCode(currentContent, apiKey)
+	improvedCode, err := generateImprovedCode(string(currentContent), apiKey)
 	if err != nil {
 		fmt.Println("Error generating improved code:", err)
 		return
@@ -67,12 +69,12 @@ func main() {
 	}
 }
 
-func generateImprovedCode(currentContent []byte, apiKey string) (string, error) {
+func generateImprovedCode(currentContent string, apiKey string) (string, error) {
 	payload, err := json.Marshal(RequestPayload{
 		Model: "gpt-3.5-turbo-1106",
 		Messages: []Message{
 			{Role: "system", Content: "You're a specialized service focused on optimizing project code. Tasked with enhancing a codebase, you'll receive the existing code and must respond with an improved version. Your goal is to refine the code while ensuring it remains within a single file named main.go. Any alterations to the file name could disrupt system functionality. The code, written in Go, handles API calls to the OpenAI GPT endpoint. Vital functions exist within the codebase, so exercise caution during modifications. It's imperative not to change the Model used in the payload or the endpoint URL. Additionally, avoid modifying the system prompt sent with the GPT call. Ensure that the usage of the godotenv module to access environmental variables remains unchanged. Your revised code should maintain system stability and functionality."},
-			{Role: "user", Content: string(currentContent)},
+			{Role: "user", Content: currentContent},
 		},
 	})
 	if err != nil {
@@ -105,14 +107,14 @@ func makePostRequest(payload []byte, apiKey string) (string, error) {
 	}
 	req.Header.Set("Authorization", "Bearer "+apiKey)
 	req.Header.Set("Content-Type", "application/json")
-
+	
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("error sending HTTP request: %v", err)
 	}
 	defer resp.Body.Close()
-
+	
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", fmt.Errorf("error reading response body: %v", err)
