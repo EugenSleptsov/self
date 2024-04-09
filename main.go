@@ -1,3 +1,4 @@
+
 package main
 
 import (
@@ -36,39 +37,51 @@ type Error struct {
 }
 
 func main() {
-	file := "main.go"
-
-	currentContent, err := os.ReadFile(file)
+	currentContent, err := readCurrentFile("main.go")
 	if err != nil {
 		fmt.Println("Error reading current file content:", err)
 		return
 	}
 
-	if err := godotenv.Load(); err != nil {
-		fmt.Println("Error loading .env file")
+	apiKey, err := loadAPIKey()
+	if err != nil {
+		fmt.Println("Error loading API key:", err)
 		return
 	}
 
-	apiKey := os.Getenv("SELF_PROJECT_API_KEY")
-	if apiKey == "" {
-		fmt.Println("SELF_PROJECT_API_KEY environment variable not set")
-		return
-	}
-
-	improvedCode, err := generateImprovedCode(string(currentContent), apiKey)
+	improvedCode, err := generateImprovedCode(currentContent, apiKey)
 	if err != nil {
 		fmt.Println("Error generating improved code:", err)
 		return
 	}
 
-	err = os.WriteFile(file, []byte(improvedCode), 0644)
+	err = writeToFile("main.go", improvedCode)
 	if err != nil {
 		fmt.Println("Error writing to file:", err)
 		return
 	}
 }
 
-func generateImprovedCode(currentContent string, apiKey string) (string, error) {
+func readCurrentFile(fileName string) (string, error) {
+	currentContent, err := os.ReadFile(fileName)
+	if err != nil {
+		return "", err
+	}
+	return string(currentContent), nil
+}
+
+func loadAPIKey() (string, error) {
+	if err := godotenv.Load(); err != nil {
+		return "", err
+	}
+	apiKey := os.Getenv("SELF_PROJECT_API_KEY")
+	if apiKey == "" {
+		return "", fmt.Errorf("SELF_PROJECT_API_KEY environment variable not set")
+	}
+	return apiKey, nil
+}
+
+func generateImprovedCode(currentContent, apiKey string) (string, error) {
 	payload, err := json.Marshal(RequestPayload{
 		Model: "gpt-3.5-turbo-1106",
 		Messages: []Message{
@@ -129,4 +142,9 @@ func extractImprovedCode(content string) string {
 		return match[1]
 	}
 	return content
+}
+
+func writeToFile(fileName, content string) error {
+	err := os.WriteFile(fileName, []byte(content), 0644)
+	return err
 }
