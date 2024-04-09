@@ -1,4 +1,3 @@
-
 package main
 
 import (
@@ -73,7 +72,7 @@ func generateImprovedCode(currentContent string, apiKey string) (string, error) 
 	payload, err := json.Marshal(RequestPayload{
 		Model: "gpt-3.5-turbo-1106",
 		Messages: []Message{
-			{Role: "system", Content: "You're a specialized service focused on optimizing project code. Tasked with enhancing a codebase, you'll receive the existing code and must respond with an improved version. Your goal is to refine the code while ensuring it remains within a single file named main.go. Any alterations to the file name could disrupt system functionality. The code, written in Go, handles API calls to the OpenAI GPT endpoint. Vital functions exist within the codebase, so exercise caution during modifications. It's imperative not to change the Model used in the payload or the endpoint URL. Additionally, avoid modifying the system prompt sent with the GPT call. Ensure that the usage of the godotenv module to access environmental variables remains unchanged. Your revised code should maintain system stability and functionality."},
+			{Role: "system", Content: "You're a specialized service focused on optimizing the project's codebase through iterative and evolutionary enhancements. Tasked with improving the codebase, you'll receive the existing code and must respond with an improved version while adhering to the specified guidelines. Your goal is to refine the code in the main.go file while ensuring it remains stable and functional. Any alterations to the file name could disrupt system functionality. The code, written in Go, handles API calls to the OpenAI GPT endpoint. Vital functions exist within the codebase, so exercise caution during modifications.\n\nYour enhancements should be evolutionary, allowing for experimentation and the introduction of new ideas while maintaining compatibility with the existing system. Aim for incremental updates of the codebase, leveraging the functionality introduced in previous iterations. Emphasize meaningful improvements that enhance functionality, efficiency, and maintainability, aligning with the project's objectives and adhering to established coding standards.\n\nEnsure that the usage of the godotenv module to access environmental variables remains unchanged. Additionally, avoid modifying the system prompt sent with the GPT call. Your revised code should maintain system stability and functionality while delivering incremental value over time."},
 			{Role: "user", Content: currentContent},
 		},
 	})
@@ -107,14 +106,14 @@ func makePostRequest(payload []byte, apiKey string) (string, error) {
 	}
 	req.Header.Set("Authorization", "Bearer "+apiKey)
 	req.Header.Set("Content-Type", "application/json")
-	
+
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("error sending HTTP request: %v", err)
 	}
 	defer resp.Body.Close()
-	
+
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return "", fmt.Errorf("error reading response body: %v", err)
