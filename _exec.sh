@@ -1,12 +1,13 @@
 #!/bin/bash
-git reset --hard HEAD
-git pull
-
 # Get the directory of the script
 SCRIPT_DIR=$(dirname "$(readlink -f "$0")")
 
 # Change to the script directory
 cd "$SCRIPT_DIR" || exit
+
+# In case of some problems with current git status, we are resetting the repository
+git reset --hard HEAD
+git pull
 
 # Each time we go run . we are receiving new main.go content
 
@@ -21,7 +22,7 @@ git commit -m "Next iteration of the project, time: $(date +'%Y-%m-%d %H:%M:%S')
 # Running the new version
 go run .
 
-# Running the version provided by new version
+# Running the version provided by new version (sometimes code changes model to davinci codex and it is not working)
 go run .
 
 # Checking if the new version is working
